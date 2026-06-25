@@ -1,0 +1,260 @@
+{
+  "info": {
+    "_postman_id": "98a855f5-735c-4cd0-87cc-0c422653d3d9",
+    "name": "Grupo 4 Carrito",
+    "description": "Tests E2",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "56157664",
+    "_collection_link": "https://go.postman.co/collection/56157664-98a855f5-735c-4cd0-87cc-0c422653d3d9?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "GET /cart",
+      "item": [
+        {
+          "name": "Get cart - Juan",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 200\", function () {\n    pm.response.to.have.status(200);\n});\n\npm.test(\"Response has items\", function () {\n    var jsonData = pm.response.json();\n    pm.expect(jsonData).to.have.property('items');\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/cart/Juan",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "cart",
+                "Juan"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "POST /items",
+      "item": [
+        {
+          "name": "Add item - Caña XYZ",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 200\", function () {\n    pm.response.to.have.status(200);\n});\n\npm.test(\"Response has items\", function () {\n    var jsonData = pm.response.json();\n    pm.expect(jsonData.items.length).to.be.greaterThan(0);\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"productId\": \"P-100\",\n    \"quantity\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/cart/Juan/items",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "cart",
+                "Juan",
+                "items"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "POST /checkout",
+      "item": [
+        {
+          "name": "Checkout - Idempotency Key 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has orderId\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('orderId');",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Idempotency-Key",
+                "value": "550e8400-e29b-41d4-a716-446655440000",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"userId\": \"Juan\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/checkout",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "checkout"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Checkout - Idempotency Key DUPLICADO",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 409 for duplicate\", function () {\r",
+                  "    pm.response.to.have.status(409);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Idempotency-Key",
+                "value": "550e8400-e29b-41d4-a716-446655440000",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"userId\": \"Juan\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/checkout",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "checkout"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "DELETE /items",
+      "item": [
+        {
+          "name": "Delete item",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "",
+                "value": "",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/cart/Juan/items/P-100",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "cart",
+                "Juan",
+                "items",
+                "P-100"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
