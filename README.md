@@ -39,7 +39,7 @@ Response:
     "userId": "Juan",
     "status": "ACTIVE",
     "items": [],
-    "total": 0
+    "totalAmount": 0
 }
 
 2. POST /cart/{userId}/items
@@ -65,11 +65,11 @@ Response:
         {
             "productId": "P-100",
             "quantity": 1,
-            "price": 14990,
+            "unitPrice": 14990,
             "subtotal": 14990
         }
     ],
-    "total": 14990
+    "totalAmount": 14990
 }
 
 3. DELETE /cart/{userId}/items/{productId}
@@ -82,10 +82,7 @@ DELETE /cart/Juan/items/P-100
 
 Response:
 
-{
-    "status": 204,
-    "message": "Item eliminado"
-}
+204 No Content (sin body)
 
 4. POST /checkout
 
@@ -127,8 +124,8 @@ Pruebas con Postman
 
 Modelo de Datos
 
-Ver: docs/modelo_datos.sql y docs/modelo_documentacion.txt
+Ver: modelo_datos.sql y modelo_documentacion.txt
 
 Postman
 
-Ver: postman_collection.json.json
+Ver: postman_collection.json

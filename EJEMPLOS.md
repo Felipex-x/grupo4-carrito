@@ -7,7 +7,7 @@
 GET http://localhost:8000/cart/Juan
 
 Response:
-{ "items": [], "total": 0 }
+{ "items": [], "totalAmount": 0 }
 
 2. Agregar producto
 
@@ -17,7 +17,7 @@ Body:
 { "productId": "P-100", "quantity": 1 }
 
 Response:
-{ "items": [{ "productId": "P-100", "quantity": 1, "price": 14990, "subtotal": 14990 }], "total": 14990 }
+{ "items": [{ "productId": "P-100", "quantity": 1, "unitPrice": 14990, "subtotal": 14990 }], "totalAmount": 14990 }
 
 3. Agregar otro producto
 
@@ -27,21 +27,21 @@ Body:
 { "productId": "P-205", "quantity": 1 }
 
 Response:
-{ "items": [/* 2 items */], "total": 34980 }
+{ "items": [/* 2 items */], "totalAmount": 34980 }
 
 4. Ver carrito
 
 GET http://localhost:8000/cart/Juan
 
 Response:
-{ "items": [/* 2 items */], "total": 34980 }
+{ "items": [/* 2 items */], "totalAmount": 34980 }
 
 5. Eliminar producto
 
 DELETE http://localhost:8000/cart/Juan/items/P-100
 
 Response:
-{ "status": 204 }
+204 No Content (sin body)
 
 6. Hacer checkout
 
@@ -53,7 +53,7 @@ Body:
 { "userId": "Juan" }
 
 Response:
-{ "orderId": "ORD-1001", "status": "CREATED" }
+{ "orderId": "ORD-1001", "status": "CREATED", "totalAmount": 14990 }
 
 7. Intentar checkout duplicado (MISMO Idempotency-Key)
 
