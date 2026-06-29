@@ -77,6 +77,9 @@ async def delete_item(userId: str, productId: str):
     if userId not in carts:
         raise HTTPException(status_code=404, detail="Cart not found")
 
+    if carts[userId]["status"] == "CHECKED_OUT":
+        raise HTTPException(status_code=400, detail="El carrito ya fue procesado. No se pueden eliminar productos.")
+
     carts[userId]["items"] = [
         item for item in carts[userId]["items"]
         if item["productId"] != productId
