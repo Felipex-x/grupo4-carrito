@@ -1,131 +1,282 @@
-# grupo4-carrito
-Mock del carrito - E2
-# Grupo 4 - Carrito y Checkout (E2)
+Tienes razón, disculpa. Aquí está el README limpio, sin el prefijo "markdown":
+markdown# grupo4-carrito
+
+Servicio de Carrito y Checkout - E3 Cloud
 
 ## Descripción
-Mock funcional del carrito para E2. Simula 4 endpoints del carrito sin conectar a BD.
 
-## Instalación
+Servicio REST funcional del carrito con persistencia en **Supabase PostgreSQL**.
+Implementa 4 endpoints principales alineados al contrato E1.
 
-### Local
+### Stack
+- **Backend:** FastAPI (Python 3.14)
+- **Base de datos:** Supabase (PostgreSQL)
+- **Despliegue:** Render (tier free)
+- **Seguridad:** RLS policies + Supabase Anon Key
+
+---
+
+## Instalación Local
+
+### 1. Clonar repositorio
 ```bash
 git clone https://github.com/Paolo-Cypher/grupo4-carrito.git
 cd grupo4-carrito
+```
+
+### 2. Crear archivo `.env`
+Copia el archivo de ejemplo:
+```bash
+cp .env.example .env
+```
+
+Luego edita `.env` y rellena con tus credenciales de Supabase:
+SUPABASE_URL=https://tuproyecto.supabase.co
+
+SUPABASE_ANON_KEY=tu_anon_key_aqui
+
+**¿Dónde obtenerlo?**
+- Ve a tu proyecto Supabase
+- Settings → API Keys
+- Copia **Project URL** y **Publishable Key (anon)**
+
+### 3. Instalar dependencias
+```bash
 pip install -r requirements.txt
+```
+
+### 4. Correr localmente
+```bash
 python -m uvicorn src.main:app --reload
+```
 
-Accede en: http://localhost:8000
+Accede en: **http://localhost:8000/docs**
 
-Servidor (Render)
-URL: https://grupo4-carrito.onrender.com/cart/juan
+---
 
-Swagger:
+## Deployment en Render
 
-URL: https://grupo4-carrito.onrender.com/docs
+### URL en vivo
+**https://grupo4-carrito.onrender.com**
 
-Endpoints
+Swagger: **https://grupo4-carrito.onrender.com/docs**
 
-1. GET /cart/{userId}
+### Variables de Entorno en Render
 
-Obtiene el carrito del usuario
+En Render Dashboard → grupo4-carrito → Settings → Environment:
 
-Request:
+Agrega estas 2 variables (obtén los valores de tu Supabase):
 
-GET /cart/Juan
+| Key | Value |
+|-----|-------|
+| `SUPABASE_URL` | Tu Project URL de Supabase |
+| `SUPABASE_ANON_KEY` | Tu Publishable Key de Supabase |
 
-Response:
+**IMPORTANTE:** Nunca compartir estos valores ni subirlos a GitHub.
+
+### Flujo de Deploy
+
+1. **Push a GitHub** (rama `P1/EV3`)
+```bash
+   git add .
+   git commit -m "mensaje descriptivo"
+   git push origin P1/EV3
+```
+
+2. **Render redeploy automático** 
+   - Render detecta el push y redeploya automáticamente
+   - O haz Manual Deploy en Render Dashboard
+
+3. **Verificar logs** 
+   - Ve a Render Dashboard → grupo4-carrito → Logs
+   - Busca "Your service is live 🎉"
+
+4. **Probar URL pública**
+   - https://grupo4-carrito.onrender.com/docs
+   - Prueba los endpoints
+
+---
+
+## Endpoints
+
+### 1. GET /cart/{userId}
+Obtiene el carrito del usuario (o crea uno si no existe)
+
+**Request:**
+```bash
+GET /cart/juan
+```
+
+**Response (200):**
+```json
 {
-    "id": "carrito-123",
-    "userId": "Juan",
-    "status": "ACTIVE",
-    "items": [],
-    "totalAmount": 0
+  "id": "3ca18d75-1d89-4944-a9e6-371c6454c9f7",
+  "userId": "juan",
+  "status": "ACTIVE",
+  "items": [],
+  "totalAmount": 0
 }
+```
 
-2. POST /cart/{userId}/items
+---
 
+### 2. POST /cart/{userId}/items
 Agrega un producto al carrito
 
-Request:
-
-POST /cart/Juan/items
-
-{
-    "productId": "P-100",
-    "quantity": 1
-}
-
-Response:
+**Request:**
+```bash
+POST /cart/juan/items
+Content-Type: application/json
 
 {
-    "id": "carrito-123",
-    "userId": "Juan",
-    "status": "ACTIVE",
-    "items": [
-        {
-            "productId": "P-100",
-            "quantity": 1,
-            "unitPrice": 14990,
-            "subtotal": 14990
-        }
-    ],
-    "totalAmount": 14990
+  "productId": "P-100",
+  "quantity": 1
 }
+```
 
-3. DELETE /cart/{userId}/items/{productId}
+**Response (200):**
+```json
+{
+  "id": "3ca18d75-1d89-4944-a9e6-371c6454c9f7",
+  "userId": "juan",
+  "status": "ACTIVE",
+  "items": [
+    {
+      "productId": "P-100",
+      "quantity": 1,
+      "unitPrice": 14990,
+      "subtotal": 14990
+    }
+  ],
+  "totalAmount": 14990
+}
+```
 
+---
+
+### 3. DELETE /cart/{userId}/items/{productId}
 Elimina un producto del carrito
 
-Request:
+**Request:**
+```bash
+DELETE /cart/juan/items/P-100
+```
 
-DELETE /cart/Juan/items/P-100
+**Response (204):**
+No Content (sin body)
 
-Response:
+---
 
-204 No Content (sin body)
+### 4. POST /checkout
+Crea un pedido. **IMPORTANTE:** Incluir `Idempotency-Key` en headers para evitar duplicados.
 
-4. POST /checkout
-
-Crea un pedido (IMPORTANTE: incluir Idempotency-Key)
-
-Request:
-
+**Request:**
+```bash
 POST /checkout
-
-Headers:
-
+Content-Type: application/json
 Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000
 
-Body:
-
 {
-    "userId": "Juan"
+  "userId": "juan"
 }
+```
 
-Response:
-
+**Response (201):**
+```json
 {
+  "orderId": "ORD-1001",
+  "status": "CREATED",
+  "totalAmount": 14990
+}
+```
+
+**Response (409 - Duplicado):**
+```json
+{
+  "detail": {
+    "message": "Intento duplicado",
     "orderId": "ORD-1001",
-    "status": "CREATED",
-    "totalAmount": 14990
+    "status": "DUPLICATED_ORDER"
+  }
 }
+```
 
-Pruebas con Postman
+---
 
-    Importa: postman_collection.json
+## Pruebas con Postman
 
-    Selecciona ambiente: "E2"
+1. **Importa:** `postman_collection.json`
+2. **Selecciona ambiente:** `E2`
+3. **Ejecuta:** Click "Run" en la colección
+4. **Resultado:** 5+ tests verdes ✅
 
-    Ejecuta tests: Click "Run"
+---
 
-    Debes ver 5 tests verdes
+## Modelo de Datos
 
+3 tablas en Supabase:
 
+- **carts:** Carrito del usuario
+- **cart_items:** Items dentro del carrito
+- **checkout_attempts:** Intentos de checkout (con idempotencia)
 
-Modelo de Datos
+Ver documentación:
+- `docs/modelo_datos.sql` - Script SQL
+- `docs/diagrama_er.md` - Diagrama entidad-relación
 
-Ver: modelo_datos.sql y modelo_documentacion.txt
+### Seguridad (RLS)
 
-Postman
+Row Level Security habilitado con policies permisivas para anon role.
 
-Ver: postman_collection.json
+**Nota para E4:** Mejorar policies con autenticación real (coordinar con G2).
+
+---
+
+## Integración con otros grupos
+
+- **G1 (Frontend):** Llama a nuestros 4 endpoints REST. Usa Swagger en `/docs`
+- **G5 (Pedidos):** Nosotros les llamamos en POST /checkout (implementa P2)
+
+---
+
+## Estructura del proyecto
+grupo4-carrito/
+
+├── src/
+
+│   └── main.py              # Endpoints FastAPI
+
+├── docs/
+
+│   ├── modelo_datos.sql     # Script de BD
+
+│   └── diagrama_er.md       # Diagrama
+
+├── requirements.txt         # Dependencias Python
+
+├── .env.example            # Template de variables
+
+├── .gitignore              # Archivos ignorados en Git
+
+├── README.md               # Este archivo
+
+└── postman_collection.json # Tests Postman
+
+---
+
+## Siguientes pasos (E4/E5)
+
+- [ ] Mejorar RLS policies con autenticación real (G2)
+- [ ] Implementar reintentos para llamadas a G5
+- [ ] Circuit breaker para resiliencia
+- [ ] Tests de carga y stress testing
+- [ ] Monitoreo en Render
+
+---
+
+## Contribuidores (Grupo 4)
+
+- **P1 (Paolo):** Infraestructura + Supabase + CI/CD
+- **P2 (Mauricio):** Endpoints reales + Manejo de errores
+- **P3 (Benjamin):** Persistencia BD + Migraciones SQL
+- **P4 (Felipe):** Pruebas funcionales + Documentación
