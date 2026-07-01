@@ -35,10 +35,14 @@ SUPABASE_URL=https://tuproyecto.supabase.co
 
 SUPABASE_ANON_KEY=tu_anon_key_aqui
 
-**¿Dónde obtenerlo?**
-- Ve a tu proyecto Supabase
-- Settings → API Keys
-- Copia **Project URL** y **Publishable Key (anon)**
+### Cómo obtener las credenciales de Supabase (SUPABASE_URL y SUPABASE_ANON_KEY)
+
+1. Entra a [supabase.com](https://supabase.com) e inicia sesión.
+2. Abre tu proyecto (o crea uno nuevo con "New Project").
+3. Ve a **Settings → API Keys**.
+4. Copia el **Project URL** → pégalo en `SUPABASE_URL`.
+5. Copia la **anon / publishable key** → pégala en `SUPABASE_ANON_KEY`.
+6. Guarda ambos valores solo en tu `.env` local (nunca los subas al repo; `.env` ya está en `.gitignore`).
 
 ### 3. Instalar dependencias
 ```bash
@@ -221,7 +225,7 @@ Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000
 - **checkout_attempts:** Intentos de checkout (con idempotencia)
 
 Ver documentación:
-- `docs/modelo_datos.sql` - Script SQL
+- `modelo_datos.sql` - Script SQL
 - `docs/diagrama_er.md` - Diagrama entidad-relación
 
 ### Seguridad (RLS)
@@ -248,9 +252,15 @@ grupo4-carrito/
 
 ├── docs/
 
-│   ├── modelo_datos.sql     # Script de BD
+│   ├── diagrama_er.md       # Diagrama entidad-relación
 
-│   └── diagrama_er.md       # Diagrama
+│   ├── EJEMPLOS.md          # Ejemplos de uso de los endpoints
+
+│   └── ESTRUCTURA.md        # Documentación de estructura del proyecto
+
+├── modelo_datos.sql         # Script SQL (DDL) de la base de datos
+
+├── modelo_documentacion.txt # Documentación detallada del modelo de datos
 
 ├── requirements.txt         # Dependencias Python
 

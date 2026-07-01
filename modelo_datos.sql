@@ -53,14 +53,16 @@ CREATE INDEX cart_items_cart_idx ON cart_items (cart_id);
 -- =============================================================
 -- TABLA: checkout_attempts
 -- Registra cada intento de pago/checkout para un carrito.
--- idempotency_key (UUID UNIQUE) garantiza que el mismo intento
+-- idempotency_key (TEXT UNIQUE) garantiza que el mismo intento
 -- de pago no se procese dos veces, incluso si el cliente reintenta.
+-- Se usa TEXT porque la clave llega desde el header HTTP
+-- "Idempotency-Key" como string libre, sin formato garantizado.
 -- order_id se llena solo cuando el intento tiene status SUCCESS.
 -- =============================================================
 CREATE TABLE checkout_attempts (
     id                UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     cart_id           UUID        NOT NULL REFERENCES carts(id),
-    idempotency_key   UUID        NOT NULL UNIQUE,
+    idempotency_key   TEXT        NOT NULL UNIQUE,
     order_id          TEXT,
     status            TEXT        NOT NULL DEFAULT 'PENDING'
                                   CHECK (status IN ('PENDING', 'SUCCESS', 'FAILED')),

@@ -42,7 +42,7 @@
 ├────────────────────┤   ├──────────────────────────────────────┤
 │ id        UUID [PK]│   │ id             UUID  [PK]            │
 │ cart_id   UUID [FK]│   │ cart_id        UUID  [FK] → carts.id │
-│           → carts  │   │ idempotency_key UUID [UQ]            │
+│           → carts  │   │ idempotency_key TEXT [UQ]            │
 │           CASCADE  │   │                → Previene duplicados │
 │ product_id TEXT    │   │ order_id       TEXT  (nullable)      │
 │ quantity   INT [CK]│   │ status         TEXT  [CK]            │
@@ -75,6 +75,6 @@
 
 - **`carts_user_active_idx` (índice único parcial):** Impide que un mismo usuario tenga más de un carrito en estado `ACTIVE` simultáneamente. Al ser parcial, no afecta a los carritos históricos (`CHECKED_OUT` / `ABANDONED`).
 
-- **`idempotency_key` (UUID UNIQUE):** Cada intento de checkout debe enviar una clave única. Si el cliente reintenta la misma solicitud (por error de red, doble clic, etc.), la base de datos rechazará la inserción duplicada, evitando cobros dobles.
+- **`idempotency_key` (TEXT UNIQUE):** Cada intento de checkout debe enviar una clave única (llega como string libre desde el header HTTP `Idempotency-Key`, sin formato garantizado). Si el cliente reintenta la misma solicitud (por error de red, doble clic, etc.), la base de datos rechazará la inserción duplicada, evitando cobros dobles.
 
 - **`UNIQUE(cart_id, product_id)` en cart_items:** Garantiza que un mismo producto no aparezca dos veces en el mismo carrito. Para cambiar la cantidad se actualiza la fila existente, no se inserta una nueva.
