@@ -162,19 +162,25 @@ Columnas:
                       aunque el carrito cambie de estado.
 
     idempotency_key
-        Tipo        : UUID
+        Tipo        : TEXT
         Restricción : NOT NULL, UNIQUE
         Descripción : Clave única que el cliente envía con cada
-                      solicitud de checkout.
-        Por qué     : Si el cliente reintenta la misma solicitud
-                      (doble clic, error de red, timeout), la base
-                      de datos rechaza la segunda inserción con un
-                      error de unicidad. La aplicación detecta ese
-                      error y devuelve el resultado del intento
-                      original en lugar de crear un cobro nuevo.
-                      Es la restricción más crítica del sistema
-                      para garantizar que un carrito se cobre
-                      una sola vez.
+                      solicitud de checkout (header HTTP
+                      "Idempotency-Key").
+        Por qué     : Se usa TEXT y no UUID porque la clave llega
+                      como string libre desde el header HTTP, sin
+                      que el cliente esté obligado a enviar un
+                      UUID válido; forzar el tipo UUID rechazaría
+                      con un error 500 cualquier clave que no
+                      cumpla ese formato. Si el cliente reintenta
+                      la misma solicitud (doble clic, error de red,
+                      timeout), la base de datos rechaza la segunda
+                      inserción con un error de unicidad. La
+                      aplicación detecta ese error y devuelve el
+                      resultado del intento original en lugar de
+                      crear un cobro nuevo. Es la restricción más
+                      crítica del sistema para garantizar que un
+                      carrito se cobre una sola vez.
 
     order_id
         Tipo        : TEXT
