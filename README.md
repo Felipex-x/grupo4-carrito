@@ -44,6 +44,16 @@ SUPABASE_ANON_KEY=tu_anon_key_aqui
 5. Copia la **anon / publishable key** → pégala en `SUPABASE_ANON_KEY`.
 6. Guarda ambos valores solo en tu `.env` local (nunca los subas al repo; `.env` ya está en `.gitignore`).
 
+### Cómo obtener la DATABASE_URL de Supabase
+
+1. Entra a [supabase.com](https://supabase.com) e inicia sesión.
+2. Abre tu proyecto.
+3. Ve a **Project Settings → Database**.
+4. Busca la sección **Connection string** o **Database connection string**.
+5. Copia el string en formato URI y pégalo en `DATABASE_URL`.
+6. Si Supabase te muestra varias opciones, usa la URL principal de conexión que te da el panel para tu proyecto.
+7. Guarda ese valor solo en tu `.env` local o en las variables de entorno del deploy; nunca lo subas a GitHub.
+
 ### 3. Instalar dependencias
 ```bash
 pip install -r requirements.txt
@@ -69,12 +79,14 @@ Swagger: **https://grupo4-carrito.onrender.com/docs**
 
 En Render Dashboard → grupo4-carrito → Settings → Environment:
 
-Agrega estas 2 variables (obtén los valores de tu Supabase):
+Agrega estas variables (obtén los valores de tu Supabase y del servicio de G5):
 
 | Key | Value |
 |-----|-------|
+| `DATABASE_URL` | Tu connection string de Supabase |
 | `SUPABASE_URL` | Tu Project URL de Supabase |
 | `SUPABASE_ANON_KEY` | Tu Publishable Key de Supabase |
+| `G5_ORDERS_URL` | URL completa del POST /orders de G5 |
 
 **IMPORTANTE:** Nunca compartir estos valores ni subirlos a GitHub.
 
@@ -240,6 +252,22 @@ Row Level Security habilitado con policies permisivas para anon role.
 
 - **G1 (Frontend):** Llama a nuestros 4 endpoints REST. Usa Swagger en `/docs`
 - **G5 (Pedidos):** Nosotros les llamamos en POST /checkout (implementa P2)
+
+### Integración con G5
+
+En `POST /checkout`, luego de marcar el carrito como `CHECKED_OUT`, el backend llama a G5 para crear la orden.
+
+Contrato asumido por ahora:
+
+- Endpoint: `POST /orders`
+- Body enviado:
+  - `userId`
+  - `cartId`
+  - `items` con `productId`, `quantity`, `unitPrice`, `subtotal`
+  - `totalAmount`
+  - `idempotencyKey`
+
+Si G5 usa otro formato, solo hay que ajustar el payload en `src/main.py` y el valor de `G5_ORDERS_URL`.
 
 ---
 
