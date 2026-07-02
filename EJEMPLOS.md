@@ -44,20 +44,23 @@ Content-Type: application/json
 
 
 #Response 200
-json 
+```json
 {
+  "id": "3ca18d75-1d89-4944-a9e6-371c6454c9f7",
   "userId": "Juan",
+  "status": "ACTIVE",
   "items": [
     {
-      "productId": "P-100",
-      "name": "Caña XYZ",
-      "price": 14990,
-      "quantity": 1
+      "cart_id": "3ca18d75-1d89-4944-a9e6-371c6454c9f7",
+      "product_id": "P-100",
+      "quantity": 1,
+      "unit_price": 14990,
+      "subtotal": 14990
     }
   ],
-  "totalAmount": 14990,
-  "status": "ACTIVE"
+  "totalAmount": 14990
 }
+```
 
 
 "Response 400 - Body inválido" 
