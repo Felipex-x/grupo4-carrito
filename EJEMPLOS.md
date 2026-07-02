@@ -3,63 +3,64 @@
 ## GET /cart/{userId}
 
 ### Request Exitoso
-`http GET /cart/Juan
+```http
+GET /cart/Juan
+```
 
-#Response 200
-
+**Response 200** (si el carrito ya existe con items):
+```json
 {
+  "id": "3ca18d75-1d89-4944-a9e6-371c6454c9f7",
   "userId": "Juan",
+  "status": "ACTIVE",
   "items": [
     {
-      "productId": "P-100",
-      "name": "Caña XYZ",
-      "price": 14990,
-      "quantity": 1
+      "cart_id": "3ca18d75-1d89-4944-a9e6-371c6454c9f7",
+      "product_id": "P-100",
+      "quantity": 1,
+      "unit_price": 14990,
+      "subtotal": 14990
     }
   ],
-  "totalAmount": 14990,
-  "status": "ACTIVE"
+  "totalAmount": 14990
 }
+```
 
-Response 404 - Carrito no encontrado
-http
-GET /cart/UsuarioInexistente
-json
-{
-  "detail": "Carrito no encontrado"
-}
+**Nota:** Si el carrito no existe, se **crea automáticamente** y devuelve 200 con `items: []`. Este endpoint nunca devuelve 404.
 
 
 #POST /cart/{userId}/items
 Request
 
-http
+```http
 POST /cart/Juan/items
 Content-Type: application/json
 
 {
   "productId": "P-100",
-  "name": "Caña XYZ",
-  "price": 14990,
   "quantity": 1
 }
+```
 
 
 #Response 200
-json 
+```json
 {
+  "id": "3ca18d75-1d89-4944-a9e6-371c6454c9f7",
   "userId": "Juan",
+  "status": "ACTIVE",
   "items": [
     {
-      "productId": "P-100",
-      "name": "Caña XYZ",
-      "price": 14990,
-      "quantity": 1
+      "cart_id": "3ca18d75-1d89-4944-a9e6-371c6454c9f7",
+      "product_id": "P-100",
+      "quantity": 1,
+      "unit_price": 14990,
+      "subtotal": 14990
     }
   ],
-  "totalAmount": 14990,
-  "status": "ACTIVE"
+  "totalAmount": 14990
 }
+```
 
 
 "Response 400 - Body inválido" 
@@ -115,7 +116,7 @@ json
 
 #Response 409 - Idempotency-Key duplicada
 
-http
+```http
 POST /checkout
 Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000
 Content-Type: application/json
@@ -123,12 +124,17 @@ Content-Type: application/json
 {
   "userId": "Juan"
 }
+```
 
-json
+```json
 {
-  "detail": "Duplicate Idempotency-Key",
-  "orderId": "ORD-12345"
+  "detail": {
+    "message": "Intento duplicado",
+    "orderId": "ORD-1001",
+    "status": "DUPLICATED_ORDER"
+  }
 }
+```
 
 
 #Response 400 - Faltan campos

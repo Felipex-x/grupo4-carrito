@@ -1,5 +1,4 @@
-Tienes razón, disculpa. Aquí está el README limpio, sin el prefijo "markdown":
-markdown# grupo4-carrito
+# grupo4-carrito
 
 Servicio de Carrito y Checkout - E3 Cloud
 
@@ -9,7 +8,7 @@ Servicio REST funcional del carrito con persistencia en **Supabase PostgreSQL**.
 Implementa 4 endpoints principales alineados al contrato E1.
 
 ### Stack
-- **Backend:** FastAPI (Python 3.14)
+- **Backend:** Node.js + Express
 - **Base de datos:** Supabase (PostgreSQL)
 - **Despliegue:** Render (tier free)
 - **Seguridad:** RLS policies + Supabase Anon Key
@@ -56,12 +55,12 @@ SUPABASE_ANON_KEY=tu_anon_key_aqui
 
 ### 3. Instalar dependencias
 ```bash
-pip install -r requirements.txt
+npm install
 ```
 
 ### 4. Correr localmente
 ```bash
-python -m uvicorn src.main:app --reload
+npm start
 ```
 
 Accede en: **http://localhost:8000/docs**
@@ -267,7 +266,7 @@ Contrato asumido por ahora:
   - `totalAmount`
   - `idempotencyKey`
 
-Si G5 usa otro formato, solo hay que ajustar el payload en `src/main.py` y el valor de `G5_ORDERS_URL`.
+Si G5 usa otro formato, solo hay que ajustar el payload en `src/index.js` y el valor de `G5_ORDERS_URL`.
 
 ---
 
@@ -276,7 +275,7 @@ grupo4-carrito/
 
 ├── src/
 
-│   └── main.py              # Endpoints FastAPI
+│   └── index.js             # Endpoints Express (Node.js)
 
 ├── docs/
 
@@ -290,7 +289,7 @@ grupo4-carrito/
 
 ├── modelo_documentacion.txt # Documentación detallada del modelo de datos
 
-├── requirements.txt         # Dependencias Python
+├── package.json             # Dependencias Node.js
 
 ├── .env.example            # Template de variables
 
