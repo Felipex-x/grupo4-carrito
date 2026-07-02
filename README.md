@@ -1,5 +1,5 @@
-Tienes razón, disculpa. Aquí está el README limpio, sin el prefijo "markdown":
-markdown# grupo4-carrito
+```markdown
+# grupo4-carrito
 
 Servicio de Carrito y Checkout - E3 Cloud
 
@@ -31,9 +31,11 @@ cp .env.example .env
 ```
 
 Luego edita `.env` y rellena con tus credenciales de Supabase:
+```env
 SUPABASE_URL=https://tuproyecto.supabase.co
-
 SUPABASE_ANON_KEY=tu_anon_key_aqui
+DATABASE_URL=postgresql://user:password@host:port/postgres
+```
 
 ### Cómo obtener las credenciales de Supabase (SUPABASE_URL y SUPABASE_ANON_KEY)
 
@@ -92,11 +94,11 @@ Agrega estas variables (obtén los valores de tu Supabase y del servicio de G5):
 
 ### Flujo de Deploy
 
-1. **Push a GitHub** (rama `P1/EV3`)
+1. **Push a GitHub** (rama `main`)
 ```bash
    git add .
    git commit -m "mensaje descriptivo"
-   git push origin P1/EV3
+   git push origin main
 ```
 
 2. **Render redeploy automático** 
@@ -219,12 +221,63 @@ Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000
 
 ---
 
-## Pruebas con Postman
+## 🧪 Pruebas con Postman
 
-1. **Importa:** `postman_collection.json`
-2. **Selecciona ambiente:** `E2`
-3. **Ejecuta:** Click "Run" en la colección
-4. **Resultado:** 5+ tests verdes ✅
+### Colección de pruebas
+
+El archivo `postman_collection.json` contiene **8 tests automatizados** que verifican el correcto funcionamiento de todos los endpoints, incluyendo casos de éxito y manejo de errores.
+
+### Cómo ejecutar las pruebas
+
+1. **Importar la colección:**
+   - Abrir Postman
+   - Click en "Import" (arriba a la izquierda)
+   - Seleccionar el archivo `postman_collection.json`
+
+2. **Configurar el ambiente:**
+   - Click en "Environments" (panel izquierdo)
+   - Crear ambiente llamado `E2`
+   - Agregar variable:
+     - **Key:** `BASE_URL`
+     - **Initial Value:** `http://localhost:8000`
+     - **Current Value:** `https://grupo4-carrito.onrender.com`
+   - Click en "Save"
+
+3. **Seleccionar el ambiente:**
+   - Arriba a la derecha, seleccionar `E2` del dropdown
+
+4. **Ejecutar la colección:**
+   - Click derecho en "Grupo 4 Carrito" → "Run collection"
+   - Seleccionar ambiente "E2"
+   - Click en "Run Grupo 4 Carrito"
+
+5. **Verificar resultados:**
+   - Deben pasar los 8 tests ✅
+   - Tests incluyen: 200, 201, 204, 400, 404, 409
+
+### Tests incluidos
+
+| # | Endpoint | Método | Test | Status Esperado |
+|---|----------|--------|------|-----------------|
+| 1 | /cart/{userId} | GET | Verificar carrito | 200 |
+| 2 | /cart/{userId}/items | POST | Agregar item | 200 |
+| 3 | /checkout (primero) | POST | Checkout exitoso | 201 |
+| 4 | /checkout (duplicado) | POST | Idempotencia | 409 |
+| 5 | /cart/{userId}/items/{id} | DELETE | Eliminar item | 204 |
+| 6 | /cart/{userId} | GET | Carrito no existe | 404 |
+| 7 | /cart/{userId}/items | POST | Body inválido | 400 |
+| 8 | /checkout | POST | Faltan campos | 400 |
+
+Ver [EJEMPLOS.md](EJEMPLOS.md) para ejemplos detallados de requests y responses reales.
+
+---
+
+## 📄 Documentación Adicional
+
+- **[EJEMPLOS.md](EJEMPLOS.md)** - Ejemplos reales de requests y responses, incluyendo casos de error
+- **[INFORME_E3.md](INFORME_E3.md)** - Informe de avance E3 con evidencias completas
+- **[modelo_datos.sql](modelo_datos.sql)** - Script SQL de la base de datos
+- **[docs/diagrama_er.md](docs/diagrama_er.md)** - Diagrama entidad-relación
 
 ---
 
@@ -272,33 +325,25 @@ Si G5 usa otro formato, solo hay que ajustar el payload en `src/main.py` y el va
 ---
 
 ## Estructura del proyecto
+
+```
 grupo4-carrito/
-
 ├── src/
-
 │   └── main.py              # Endpoints FastAPI
-
 ├── docs/
-
 │   ├── diagrama_er.md       # Diagrama entidad-relación
-
 │   ├── EJEMPLOS.md          # Ejemplos de uso de los endpoints
-
 │   └── ESTRUCTURA.md        # Documentación de estructura del proyecto
-
 ├── modelo_datos.sql         # Script SQL (DDL) de la base de datos
-
 ├── modelo_documentacion.txt # Documentación detallada del modelo de datos
-
 ├── requirements.txt         # Dependencias Python
-
-├── .env.example            # Template de variables
-
-├── .gitignore              # Archivos ignorados en Git
-
-├── README.md               # Este archivo
-
-└── postman_collection.json # Tests Postman
+├── .env.example             # Template de variables
+├── .gitignore               # Archivos ignorados en Git
+├── README.md                # Este archivo
+├── EJEMPLOS.md              # Ejemplos reales de requests/responses
+├── INFORME_E3.md            # Informe de avance E3
+└── postman_collection.json  # Tests Postman
+```
 
 ---
 
@@ -317,4 +362,7 @@ grupo4-carrito/
 - **P1 (Paolo):** Infraestructura + Supabase + CI/CD
 - **P2 (Mauricio):** Endpoints reales + Manejo de errores
 - **P3 (Benjamin):** Persistencia BD + Migraciones SQL
+- **P4 (Felipe):** Pruebas funcionales + Documentación
+```
+
 - **P4 (Felipe):** Pruebas funcionales + Documentación
