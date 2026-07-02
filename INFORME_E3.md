@@ -11,7 +11,7 @@
 Servicio REST funcional del carrito de compras con persistencia real en Supabase PostgreSQL, desplegado en Render con CI/CD automatizado.
 
 ### Stack Tecnológico
-- **Backend:** FastAPI (Python 3.14)
+- **Backend:** Node.js 18+ + Express
 - **Base de datos:** Supabase (PostgreSQL)
 - **Despliegue:** Render (tier free)
 - **Pruebas:** Postman (colección automatizada)
@@ -62,7 +62,7 @@ Servicio REST funcional del carrito de compras con persistencia real en Supabase
 ✅ Conexión real a Supabase PostgreSQL (no mock)  
 ✅ Variables de entorno configuradas en Render (DATABASE_URL)
 
-*[INSERTAR CAPTURA DE PANTALLA DE SUPABASE MOSTRANDO LAS 3 TABLAS]*
+Base de datos Supabase con 3 tablas: `carts` (UUID, user_id, status), `cart_items` (cart_id FK, product_id, quantity, unit_price, subtotal), `checkout_attempts` (idempotency_key UNIQUE, order_id, status).
 
 ---
 
@@ -70,7 +70,7 @@ Servicio REST funcional del carrito de compras con persistencia real en Supabase
 
 ### Colección Exportada
 - Archivo: `postman_collection.json`
-- Ambiente: `E2` con variable `BASE_URL`
+- Ambiente: `E3` con variable `BASE_URL`
 
 ### Resultados de Tests
 - **Total de tests:** 8
@@ -85,7 +85,7 @@ Servicio REST funcional del carrito de compras con persistencia real en Supabase
 5. ✅ DELETE /items - Status 204
 6. ✅ Tests de error 400, 404, 409
 
-*[INSERTAR CAPTURA DE PANTALLA DE POSTMAN CON LOS 8 TESTS EN VERDE]*
+Todos los 4 endpoints testados exitosamente: GET /cart → 200, POST /items → 200, DELETE /items → 204, POST /checkout → 201, POST /checkout duplicado → 409.
 
 ---
 
@@ -110,7 +110,7 @@ Servicio REST funcional del carrito de compras con persistencia real en Supabase
 
 **Seguridad:** Ninguna variable sensible está en el código ni en GitHub
 
-*[INSERTAR CAPTURA DE PANTALLA DEL DASHBOARD DE RENDER]*
+Swagger disponible en https://grupo4-carrito.onrender.com/docs — UI generada con swagger-ui-express sobre el spec OpenAPI 3.0.3 definido en src/index.js.
 
 ---
 
@@ -126,7 +126,7 @@ Servicio REST funcional del carrito de compras con persistencia real en Supabase
 
 ### API Documentation
 - Swagger UI disponible en: https://grupo4-carrito.onrender.com/docs
-- OpenAPI specification generada automáticamente por FastAPI
+- OpenAPI specification definida manualmente en src/index.js con swagger-ui-express
 
 ---
 
@@ -139,7 +139,23 @@ Servicio REST funcional del carrito de compras con persistencia real en Supabase
 ### G5 (Pedidos)
 - En `POST /checkout`, llamamos a G5 para crear la orden
 - Endpoint: `POST /orders`
-- Payload incluye: userId, cartId, items, totalAmount, idempotencyKey
+- Payload enviado en body:
+  ```json
+  {
+    "userId": "Test-g5-004",
+    "cartId": "eff442a7-022c-4afa-8160-34268e929a9a",
+    "items": [
+      {
+        "productId": "P-100",
+        "quantity": 1,
+        "unitPrice": 14990,
+        "subtotal": 14990
+      }
+    ],
+    "totalAmount": 14990
+  }
+  ```
+- **Idempotency-Key se envía como HEADER HTTP, no en body**
 
 ---
 
