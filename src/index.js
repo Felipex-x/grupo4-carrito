@@ -599,6 +599,7 @@ async function authMiddleware(req, res, next) {
 
   try {
     req.user = await validateTokenWithG2(token, req.correlationId);
+    req.token = token;
     console.log(
       `[AUTH] correlationId=${req.correlationId} | Auth OK: ${req.user && req.user.business_user_id}`
     );
@@ -740,7 +741,7 @@ async function fetchG3Product(productId) {
   }
 }
 
-function createOrderInG5(payload, idempotencyKey, requestId, correlationId) {
+function createOrderInG5(payload, idempotencyKey, requestId, correlationId, token) {
   return new Promise((resolve, reject) => {
     if (!g5OrdersUrl) {
       reject(new HttpException(500, "INTERNAL_SERVER_ERROR", "G5_ORDERS_URL no configurada"));
@@ -772,6 +773,7 @@ function createOrderInG5(payload, idempotencyKey, requestId, correlationId) {
         "X-Request-Id": requestId,
         "X-Correlation-Id": correlationId,
         "X-Consumer": "grupo-4",
+        Authorization: `Bearer ${token}`,
       },
       timeout: 10000,
     };
@@ -1146,7 +1148,8 @@ app.post("/checkout", async (req, res) => {
         g5Payload,
         idempotencyKey,
         req.requestId,
-        req.correlationId
+        req.correlationId,
+        req.token
       );
     } catch (error) {
       await rollbackCheckout(cartId, idempotencyKey);
