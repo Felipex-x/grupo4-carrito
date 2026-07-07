@@ -4,6 +4,7 @@ const { createClient } = require("@supabase/supabase-js");
 require("dotenv").config();
 
 const app = require("../index");
+const realFetch = global.fetch.bind(global);
 
 const TEST_USER = "ci-test-" + Date.now();
 const NEW_USER = `${TEST_USER}-new`;
@@ -22,7 +23,7 @@ const g3Products = {
 };
 
 function mockG3ProductFetch(productId, price) {
-  return jest.spyOn(global, "fetch").mockImplementation(async (url) => {
+  return jest.spyOn(global, "fetch").mockImplementation(async (url, ...args) => {
     if (String(url).includes(`/products/${encodeURIComponent(productId)}`)) {
       return {
         ok: true,
@@ -30,25 +31,30 @@ function mockG3ProductFetch(productId, price) {
         json: async () => ({ id: productId, price }),
       };
     }
-
-    return {
-      ok: false,
-      status: 404,
-      json: async () => ({ detail: "Producto no encontrado" }),
-    };
+    return realFetch(url, ...args);
   });
 }
 
 function mockG3NotFoundFetch() {
-  return jest.spyOn(global, "fetch").mockResolvedValue({
-    ok: false,
-    status: 404,
-    json: async () => ({ detail: "Producto no encontrado" }),
+  return jest.spyOn(global, "fetch").mockImplementation(async (url, ...args) => {
+    if (String(url).includes("/products/")) {
+      return {
+        ok: false,
+        status: 404,
+        json: async () => ({ detail: "Producto no encontrado" }),
+      };
+    }
+    return realFetch(url, ...args);
   });
 }
 
 function mockG3UnavailableFetch() {
-  return jest.spyOn(global, "fetch").mockRejectedValue(new Error("connect ECONNREFUSED"));
+  return jest.spyOn(global, "fetch").mockImplementation(async (url, ...args) => {
+    if (String(url).includes("/products/")) {
+      throw new Error("connect ECONNREFUSED");
+    }
+    return realFetch(url, ...args);
+  });
 }
 
 // Limpia carrito, items y checkout_attempts de un usuario de prueba, sin
