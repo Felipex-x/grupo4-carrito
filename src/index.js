@@ -688,6 +688,10 @@ async function fetchG3Product(productId, requestId, correlationId) {
   const controller = new AbortController();
   const timeoutHandle = setTimeout(() => controller.abort(), timeoutMs);
 
+  console.log(`[fetchG3Product] Sending request to G3: ${itemUrl}`);
+  console.log(`[fetchG3Product] requestId: ${requestId} (type: ${typeof requestId})`);
+  console.log(`[fetchG3Product] correlationId: ${correlationId} (type: ${typeof correlationId})`);
+
   try {
     const response = await fetch(itemUrl, {
       method: "GET",
@@ -705,10 +709,11 @@ async function fetchG3Product(productId, requestId, correlationId) {
     }
 
     if (!response.ok) {
+      const errorText = await response.text().catch(() => "N/A");
       throw new HttpException(
         503,
         "SERVICE_UNAVAILABLE",
-        `Grupo 3 respondió ${response.status}`
+        `Grupo 3 respondió ${response.status}: ${errorText}`
       );
     }
 
