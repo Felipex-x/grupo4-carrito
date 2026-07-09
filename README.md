@@ -1,136 +1,90 @@
 ![CI](https://github.com/Paolo-Cypher/grupo4-carrito/actions/workflows/ci.yml/badge.svg)
 
-# grupo4-carrito
+# Grupo 4 - Carrito y Checkout (G4)
 
-Servicio de Carrito y Checkout - E3 Cloud
+**E4 Integracion de Servicios - Mini Marketplace Cloud 2026**
 
-## Descripción
+Microservicio de Carrito y Checkout que integra autenticacion (G2), catalogo de productos (G3) y servicio de pedidos (G5) con patrones de idempotencia y trazabilidad distribuida.
 
-Servicio REST funcional del carrito con persistencia en **Supabase PostgreSQL**.
-Implementa 4 endpoints principales alineados al contrato E1.
-
-### Stack
-- **Backend:** Node.js + Express
-- **Base de datos:** Supabase (PostgreSQL)
-- **Despliegue:** Render (tier free)
-- **Seguridad:** RLS policies + Supabase Anon Key
+**API:** https://grupo4-carrito.onrender.com
+**Swagger:** https://grupo4-carrito.onrender.com/docs
 
 ---
 
-## Instalación Local
+## Estado del Proyecto E4
 
-### 1. Clonar repositorio
-```bash
-git clone https://github.com/Paolo-Cypher/grupo4-carrito.git
-cd grupo4-carrito
-```
-
-### 2. Crear archivo `.env`
-Copia el archivo de ejemplo:
-```bash
-cp .env.example .env
-```
-
-Luego edita `.env` y rellena con tus credenciales de Supabase:
-SUPABASE_URL=https://tuproyecto.supabase.co
-
-SUPABASE_ANON_KEY=tu_anon_key_aqui
-
-### Cómo obtener las credenciales de Supabase (SUPABASE_URL y SUPABASE_ANON_KEY)
-
-1. Entra a [supabase.com](https://supabase.com) e inicia sesión.
-2. Abre tu proyecto (o crea uno nuevo con "New Project").
-3. Ve a **Settings → API Keys**.
-4. Copia el **Project URL** → pégalo en `SUPABASE_URL`.
-5. Copia la **anon / publishable key** → pégala en `SUPABASE_ANON_KEY`.
-6. Guarda ambos valores solo en tu `.env` local (nunca los subas al repo; `.env` ya está en `.gitignore`).
-
-### Cómo obtener la DATABASE_URL de Supabase
-
-1. Entra a [supabase.com](https://supabase.com) e inicia sesión.
-2. Abre tu proyecto.
-3. Ve a **Project Settings → Database**.
-4. Busca la sección **Connection string** o **Database connection string**.
-5. Copia el string en formato URI y pégalo en `DATABASE_URL`.
-6. Si Supabase te muestra varias opciones, usa la URL principal de conexión que te da el panel para tu proyecto.
-7. Guarda ese valor solo en tu `.env` local o en las variables de entorno del deploy; nunca lo subas a GitHub.
-
-### 3. Instalar dependencias
-```bash
-npm install
-```
-
-### 4. Correr localmente
-```bash
-npm start
-```
-
-Accede en: **http://localhost:8000/docs**
+| Componente | Estado | Descripcion |
+|------------|--------|-------------|
+| **G2 - Autenticacion** | Funcionando | Validacion de token Bearer en todos los endpoints |
+| **G3 - Catalogo** | Funcionando | Consulta de precios reales con headers de trazabilidad |
+| **G5 - Pedidos** | Funcionando | Creacion de ordenes con idempotencia |
+| **Trazabilidad** | Implementado | X-Correlation-Id, X-Request-Id, X-Consumer |
+| **Idempotencia** | Implementado | Header Idempotency-Key en POST /checkout |
+| **CI/CD** | Configurado | GitHub Actions con pipeline verde |
 
 ---
 
-## Autenticación (E4 Integración)
-
-### Requerimiento
-Todos los endpoints requieren autenticación con token JWT emitido por **Grupo 2 (Identidad)**.
+## Endpoints
 
 ### Headers Requeridos
+
+Todos los endpoints requieren:
+
 ```
-Authorization: Bearer {access_token}    // OBLIGATORIO
-X-Correlation-Id: {uuid}                // Recomendado para trazabilidad
+Authorization: Bearer {access_token}
+X-Correlation-Id: {uuid}
+X-Request-Id: {uuid}
+X-Consumer: grupo-4
+Accept: application/json
 ```
 
-### Ejemplo: Obtener token y usar en G4
+---
 
-#### 1. Login en G2 (obtener token)
+### GET /cart/{userId}
+
+Obtiene el carrito de un usuario con sus items y precios reales.
+
+**Request:**
 ```bash
-curl -X POST https://auth-minimarket-cloud.onrender.com/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "g4-test@correo.cl",
-    "password": "TestG4Clave123"
-  }'
+curl -X GET https://grupo4-carrito.onrender.com/cart/USR-01 \
+  -H "Authorization: Bearer eyJhbGciOi..." \
+  -H "X-Correlation-Id: abc-123" \
+  -H "X-Request-Id: prueba-123" \
+  -H "X-Consumer: grupo-4" \
+  -H "Accept: application/json"
+```
 
-# Respuesta:
+**Response 200 OK:**
+```json
 {
-  "user": {
-    "user_id": "7a9b189c-80e4-4c30-99ab-9308acae08dd",
-    "business_user_id": "USR-11",
-    "email": "g4-test@correo.cl",
-    "role": "customer",
-    "status": "active"
-  },
-  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "expires_in": 3600
+  "id": "1b793710-9a51-4324-a0b1-0fff78726a3b",
+  "userId": "USR-01",
+  "status": "ACTIVE",
+  "items": [
+    {
+      "id": "848d9742-068d-4ba1-9cf1-843beef97fbb",
+      "cart_id": "1b793710-9a51-4324-a0b1-0fff78726a3b",
+      "product_id": "0e319c09-7aa8-4162-b0dd-7f8e6f5a610a",
+      "quantity": 1,
+      "unit_price": 89990,
+      "subtotal": 89990
+    },
+    {
+      "id": "6b4180d4-9882-475d-90c4-7139fc828501",
+      "product_id": "6e334f56-66c4-4e2c-8e0b-e8f981d3c80a",
+      "quantity": 1,
+      "unit_price": 8990,
+      "subtotal": 8990
+    }
+  ],
+  "totalAmount": 98980
 }
 ```
 
-#### 2. Usar el token en G4
-```bash
-# Guardar el token
-TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-
-# Obtener carrito (userId debe ser el business_user_id)
-curl http://localhost:3000/cart/USR-11 \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "X-Correlation-Id: 550e8400-e29b-41d4-a716-446655440000"
-
-# Agregar item al carrito
-curl -X POST http://localhost:3000/cart/USR-11/items \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"productId": "P-100", "quantity": 2}'
-```
-
-### Códigos de Error
-- **401 Unauthorized** — Token ausente, inválido o expirado
-- **403 Forbidden** — Usuario intenta acceder a carrito de otro usuario
-- **503 Service Unavailable** — Servicio de identidad (G2) no disponible
-
-### Estructura de Error
+**Response 401 Unauthorized:**
 ```json
 {
-  "timestamp": "2026-07-07T12:00:00Z",
+  "timestamp": "2026-07-09T00:00:00.000Z",
   "status": 401,
   "code": "UNAUTHORIZED",
   "message": "Token requerido",
@@ -140,268 +94,285 @@ curl -X POST http://localhost:3000/cart/USR-11/items \
 
 ---
 
-## Deployment en Render
+### POST /cart/{userId}/items
 
-### URL en vivo
-**https://grupo4-carrito.onrender.com**
-
-Swagger: **https://grupo4-carrito.onrender.com/docs**
-
-### Variables de Entorno en Render
-
-En Render Dashboard → grupo4-carrito → Settings → Environment:
-
-Agrega estas variables (obtén los valores de tu Supabase y del servicio de G5):
-
-| Key | Value |
-|-----|-------|
-| `DATABASE_URL` | Tu connection string de Supabase |
-| `SUPABASE_URL` | Tu Project URL de Supabase |
-| `SUPABASE_ANON_KEY` | Tu Publishable Key de Supabase |
-| `G3_CATALOG_URL` | Base URL del catálogo de Grupo 3 (`https://catalog-api-cm1l.onrender.com/api/v1`) |
-| `G5_ORDERS_URL` | URL completa del POST /orders de G5 |
-| `G2_AUTH_URL` | Base URL de autenticación de Grupo 2 (`https://auth-minimarket-cloud.onrender.com`) |
-| `G2_AUTH_VALIDATE_ENDPOINT` | Path del endpoint de validación de token (`/auth/validate`) |
-| `REQUEST_TIMEOUT` | Timeout en ms para la validación de token contra G2 (`5000`) |
-
-**IMPORTANTE:** Nunca compartir estos valores ni subirlos a GitHub.
-
-### Flujo de Deploy
-
-1. **Push a GitHub** (rama `P1/EV3`)
-```bash
-   git add .
-   git commit -m "mensaje descriptivo"
-   git push origin P1/EV3
-```
-
-2. **Render redeploy automático** 
-   - Render detecta el push y redeploya automáticamente
-   - O haz Manual Deploy en Render Dashboard
-
-3. **Verificar logs** 
-   - Ve a Render Dashboard → grupo4-carrito → Logs
-   - Busca "Your service is live 🎉"
-
-4. **Probar URL pública**
-   - https://grupo4-carrito.onrender.com/docs
-   - Prueba los endpoints
-
----
-
-## Endpoints
-
-### 1. GET /cart/{userId}
-Obtiene el carrito del usuario (o crea uno si no existe)
+Agrega un item al carrito consultando el precio real en G3.
 
 **Request:**
 ```bash
-GET /cart/juan
+curl -X POST https://grupo4-carrito.onrender.com/cart/USR-01/items \
+  -H "Authorization: Bearer eyJhbGciOi..." \
+  -H "X-Correlation-Id: abc-123" \
+  -H "X-Request-Id: 123456" \
+  -H "X-Consumer: grupo-4" \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "productId": "0e319c09-7aa8-4162-b0dd-7f8e6f5a610a",
+    "quantity": 1
+  }'
 ```
 
-**Response (200):**
+**Response 200 OK:**
 ```json
 {
-  "id": "3ca18d75-1d89-4944-a9e6-371c6454c9f7",
-  "userId": "juan",
-  "status": "ACTIVE",
-  "items": [],
-  "totalAmount": 0
+  "id": "uuid",
+  "userId": "USR-01",
+  "productId": "0e319c09-7aa8-4162-b0dd-7f8e6f5a610a",
+  "unitPrice": 89990,
+  "quantity": 1,
+  "subtotal": 89990
 }
 ```
 
----
-
-### 2. POST /cart/{userId}/items
-Agrega un producto al carrito
-
-**Request:**
-```bash
-POST /cart/juan/items
-Content-Type: application/json
-
-{
-  "productId": "P-100",
-  "quantity": 1
-}
-```
-
-**Response (200):**
+**Response 503 Service Unavailable:**
 ```json
 {
-  "id": "3ca18d75-1d89-4944-a9e6-371c6454c9f7",
-  "userId": "juan",
-  "status": "ACTIVE",
-  "items": [
-    {
-      "productId": "P-100",
-      "quantity": 1,
-      "unitPrice": 14990,
-      "subtotal": 14990
-    }
-  ],
-  "totalAmount": 14990
+  "timestamp": "2026-07-09T00:00:00.000Z",
+  "status": 503,
+  "code": "SERVICE_UNAVAILABLE",
+  "message": "Grupo 3 no responde",
+  "correlationId": "550e8400-e29b-41d4-a716-446655440000"
 }
 ```
 
 ---
 
-### 3. DELETE /cart/{userId}/items/{productId}
-Elimina un producto del carrito
+### DELETE /cart/{userId}/items/{productId}
+
+Elimina un item del carrito.
 
 **Request:**
 ```bash
-DELETE /cart/juan/items/P-100
+curl -X DELETE https://grupo4-carrito.onrender.com/cart/USR-01/items/0e319c09-7aa8-4162-b0dd-7f8e6f5a610a \
+  -H "Authorization: Bearer eyJhbGciOi..." \
+  -H "X-Correlation-Id: abc-123" \
+  -H "X-Request-Id: prueba-123" \
+  -H "X-Consumer: grupo-4" \
+  -H "Accept: application/json"
 ```
 
-**Response (204):**
-No Content (sin body)
+**Response 204 No Content:** Item eliminado exitosamente
 
----
-
-### 4. POST /checkout
-Crea un pedido. **IMPORTANTE:** Incluir `Idempotency-Key` en headers para evitar duplicados.
-
-**Request:**
-```bash
-POST /checkout
-Content-Type: application/json
-Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000
-
-{
-  "userId": "juan"
-}
-```
-
-**Response (201):**
+**Response 403 Forbidden:**
 ```json
 {
-  "orderId": "ORD-1001",
+  "timestamp": "2026-07-09T00:00:00.000Z",
+  "status": 403,
+  "code": "FORBIDDEN",
+  "message": "El usuario del token no coincide con el recurso solicitado",
+  "correlationId": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+**Response 404 Not Found:**
+```json
+{
+  "timestamp": "2026-07-09T00:00:00.000Z",
+  "status": 404,
+  "code": "NOT_FOUND",
+  "message": "Item not found",
+  "correlationId": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+---
+
+### POST /checkout
+
+Procesa el checkout del carrito creando una orden en G5.
+
+**Request:**
+```bash
+curl -X POST https://grupo4-carrito.onrender.com/checkout \
+  -H "Authorization: Bearer eyJhbGciOi..." \
+  -H "X-Correlation-Id: abc-123" \
+  -H "X-Request-Id: prueba-123" \
+  -H "X-Consumer: grupo-4" \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: 8d5d4d9f-7c82-4b1f-bf92-4df3c6d7d5e2" \
+  -d '{
+    "userId": "USR-01"
+  }'
+```
+
+**Response 201 Created:**
+```json
+{
+  "orderId": "ORD-1783567511437",
   "status": "CREATED",
-  "totalAmount": 14990
+  "totalAmount": 61980
 }
 ```
 
-**Response (409 - Duplicado):**
+**Response 409 Conflict (Idempotencia):**
 ```json
 {
-  "detail": {
-    "message": "Intento duplicado",
-    "orderId": "ORD-1001",
-    "status": "DUPLICATED_ORDER"
-  }
+  "timestamp": "2026-07-09T00:00:00.000Z",
+  "status": 409,
+  "code": "DUPLICATED_ORDER",
+  "message": "Intento duplicado, orderId existente: ORD-1783567511437",
+  "correlationId": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+**Response 400 Bad Request:**
+```json
+{
+  "timestamp": "2026-07-09T00:00:00.000Z",
+  "status": 400,
+  "code": "EMPTY_CART",
+  "message": "Carrito vacio",
+  "correlationId": "550e8400-e29b-41d4-a716-446655440000"
 }
 ```
 
 ---
 
-## Pruebas con Postman
+## Integraciones E4
 
-1. **Importa:** `postman_collection.json`
-2. **Selecciona ambiente:** `E2`
-3. **Ejecuta:** Click "Run" en la colección
-4. **Resultado:** 5+ tests verdes ✅
+### G2 - Autenticacion
+- **URL:** https://auth-minimarket-cloud.onrender.com
+- **Endpoint:** GET /auth/validate
+- **Proposito:** Validar token Bearer antes de procesar requests
+- **Implementacion:** Middleware global authMiddleware
+- **Estado:** Funcionando
 
----
+### G3 - Catalogo
+- **URL:** https://catalog-api-cm1l.onrender.com/api/v1/products
+- **Endpoint:** GET /products/{id}
+- **Headers Requeridos:** X-Consumer, X-Request-Id, X-Correlation-Id, Accept
+- **Proposito:** Obtener precio real de productos
+- **Estado:** Funcionando (requiere headers de trazabilidad)
+- **Nota:** Sin los headers correctos, G3 devuelve 400 o timeout
 
-## Modelo de Datos
-
-3 tablas en Supabase:
-
-- **carts:** Carrito del usuario
-- **cart_items:** Items dentro del carrito
-- **checkout_attempts:** Intentos de checkout (con idempotencia)
-
-Ver documentación:
-- `modelo_datos.sql` - Script SQL
-- `docs/diagrama_er.md` - Diagrama entidad-relación
-
-### Seguridad (RLS)
-
-Row Level Security habilitado con policies permisivas para anon role.
-
-**Nota para E4:** Mejorar policies con autenticación real (coordinar con G2).
+### G5 - Pedidos
+- **URL:** https://pedidos-g5.onrender.com/orders
+- **Endpoint:** POST /orders
+- **Header:** Idempotency-Key
+- **Proposito:** Crear orden final con idempotencia
+- **Estado:** Funcionando
 
 ---
 
-## Integración con otros grupos
+## Arquitectura
 
-- **G1 (Frontend):** Llama a nuestros 4 endpoints REST. Usa Swagger en `/docs`
-- **G2 (Identidad):** Nosotros les llamamos para validar el token en cada request (implementa P2)
-- **G5 (Pedidos):** Nosotros les llamamos en POST /checkout (implementa P2)
+```
++-----------------+
+|   Cliente G1    |
++--------+--------+
+         | HTTP Requests
+         | (Auth + Headers)
+         v
++-----------------------------+
+|  G4 - Carrito y Checkout    |
+|  grupo4-carrito.onrender.com|
+|                             |
+|  GET /cart/{userId}         |
+|  POST /cart/{userId}/items  |
+|  DELETE /cart/{userId}/items/{id}
+|  POST /checkout             |
++---+-----------+-------------+
+    |           |             |
+    v           v             v
++------+  +-----------+  +-----------+
+|  G2  |  |    G3     |  |    G5     |
+| Auth |  | Catalogo  |  |  Pedidos  |
++------+  +-----------+  +-----------+
+                  |
+                  v
+            +-----------+
+            |  Supabase |
+            | PostgreSQL|
+            +-----------+
+```
 
-### Integración con G2
-
-Un middleware global (`authMiddleware`) valida el header `Authorization: Bearer {token}`
-en cada request contra `GET {G2_AUTH_URL}{G2_AUTH_VALIDATE_ENDPOINT}`, propagando
-`X-Correlation-Id`. Si el token es válido, se adjunta `req.user` (con `business_user_id`,
-`email`, `role`, `status`) y cada endpoint valida que el `userId` de la ruta coincida con
-`req.user.business_user_id` antes de continuar. Ver sección
-[Autenticación (E4 Integración)](#autenticación-e4-integración) para el detalle completo.
-
-### Integración con G5
-
-En `POST /checkout`, luego de marcar el carrito como `CHECKED_OUT`, el backend llama a G5 para crear la orden.
-
-Contrato asumido por ahora:
-
-- Endpoint: `POST /orders`
-- Body enviado:
-  - `userId`
-  - `cartId`
-  - `items` con `productId`, `quantity`, `unitPrice`, `subtotal`
-  - `totalAmount`
-  - `idempotencyKey`
-
-Si G5 usa otro formato, solo hay que ajustar el payload en `src/index.js` y el valor de `G5_ORDERS_URL`.
-
----
-
-## Estructura del proyecto
-grupo4-carrito/
-
-├── src/
-
-│   └── index.js             # Endpoints Express (Node.js)
-
-├── docs/
-
-│   ├── diagrama_er.md       # Diagrama entidad-relación
-
-│   ├── EJEMPLOS.md          # Ejemplos de uso de los endpoints
-
-│   └── ESTRUCTURA.md        # Documentación de estructura del proyecto
-
-├── modelo_datos.sql         # Script SQL (DDL) de la base de datos
-
-├── modelo_documentacion.txt # Documentación detallada del modelo de datos
-
-├── package.json             # Dependencias Node.js
-
-├── .env.example            # Template de variables
-
-├── .gitignore              # Archivos ignorados en Git
-
-├── README.md               # Este archivo
-
-└── postman_collection.json # Tests Postman
+**Diagrama completo:** docs/diagrama_arquitectura.png
+**Diagrama de secuencia:** docs/diagrama_secuencia_trazabilidad.png
 
 ---
 
-## Siguientes pasos (E4/E5)
+## Patrones Tecnicos
 
-- [x] Autenticación JWT real contra G2 en los endpoints (middleware `authMiddleware`)
-- [ ] Mejorar RLS policies con autenticación real (G2)
-- [ ] Implementar reintentos para llamadas a G5
-- [ ] Circuit breaker para resiliencia
-- [ ] Tests de carga y stress testing
-- [ ] Monitoreo en Render
+### Idempotencia
+- **Implementacion:** Header Idempotency-Key en POST /checkout
+- **Almacenamiento:** Tabla checkout_attempts con UNIQUE constraint
+- **Comportamiento:**
+  - Primera peticion: 201 Created (crea orden)
+  - Peticion duplicada: 409 Conflict (devuelve orderId existente)
+- **Beneficio:** Previene ordenes duplicadas en retries de red
+
+### Trazabilidad
+- **Headers:** X-Correlation-Id, X-Request-Id, X-Consumer
+- **Propagacion:** Se propagan a G2, G3 y G5
+- **Beneficio:** Permite rastrear requests en logs distribuidos
+- **Ejemplo:** 550e8400-e29b-41d4-a716-446655440000
+
+### Formato de Error Estandar
+Todos los errores siguen este formato:
+```json
+{
+  "timestamp": "2026-07-09T00:00:00.000Z",
+  "status": 400,
+  "code": "ERROR_CODE",
+  "message": "Descripcion del error",
+  "correlationId": "uuid-aqui"
+}
+```
 
 ---
 
-## Contribuidores (Grupo 4)
+## Pruebas de Integracion
 
-- **P1 (Paolo):** Infraestructura + Supabase + CI/CD
-- **P2 (Mauricio):** Endpoints reales + Manejo de errores
-- **P3 (Benjamin):** Persistencia BD + Migraciones SQL
-- **P4 (Felipe):** Pruebas funcionales + Documentación
+### Pruebas Exitosas
+| Test | Endpoint | Status | Descripcion |
+|------|----------|--------|-------------|
+| 1 | GET /cart/USR-01 | 200 OK | Autenticacion G2 funcionando |
+| 2 | POST /items con headers G3 | 200 OK | Precio real de G3 (89990, 8990) |
+| 3 | POST /checkout | 201 Created | Orden creada: ORD-1783567511437 |
+| 4 | POST /checkout (duplicado) | 409 Conflict | Idempotencia funcionando |
+| 5 | GET G3 directo | 200 OK | G3 operativo con headers |
+
+### Pruebas Fallidas (Manejo de Errores)
+| Test | Endpoint | Status | Descripcion |
+|------|----------|--------|-------------|
+| 1 | Sin token | 401 | Token requerido |
+| 2 | G3 sin headers | 503 | G3 requiere X-Consumer, X-Request-Id |
+| 3 | G3 timeout | 503 | Timeout en comunicacion |
+| 4 | DELETE item inexistente | 404 | Validacion de items |
+| 5 | Checkout vacio | 400 | Validacion de negocio |
+| 6 | Usuario incorrecto | 403 | Validacion de seguridad |
+
+**Coleccion Postman:** postman_collection.json
+
+---
+
+## Documentacion E4
+
+- **Informe E4:** docs/Informe_E4_Grupo4.pdf
+- **Diagrama de Arquitectura:** docs/diagrama_arquitectura.png
+- **Diagrama de Secuencia:** docs/diagrama_secuencia_trazabilidad.png
+- **Swagger:** https://grupo4-carrito.onrender.com/docs
+- **API:** https://grupo4-carrito.onrender.com
+
+---
+
+## Stack Tecnologico
+
+- **Runtime:** Node.js + Express
+- **Base de Datos:** Supabase (PostgreSQL)
+- **CI/CD:** GitHub Actions
+- **Hosting:** Render (tier free)
+- **Seguridad:** RLS policies + JWT validation
+
+---
+
+## Equipo E4
+
+| Rol | Nombre | Responsabilidad |
+|-----|--------|-----------------|
+| **P1** | Paolo | GitHub Actions + Tests + Trazabilidad |
+| **P2** | Mauricio | Integracion G2 (Autenticacion) |
+| **P3** | Benjamin | Integracion G3 (Catalogo) + Mejoras G5 |
+| **P4** | Felipe | Pruebas de Integracion + Diagrama + Informe E4 |
